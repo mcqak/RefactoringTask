@@ -13,7 +13,6 @@ const WebBrowser = {
 };
 
 function Speaker() {
-
   let SpeakerContext = this;
 
   SpeakerContext.validate = () => {
