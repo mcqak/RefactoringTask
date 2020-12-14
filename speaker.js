@@ -61,6 +61,7 @@ function Speaker() {
     //let's go ahead and register him/her now.
     //First, let's calculate the registration fee.
     //More experienced speakers pay a lower fee.
+    
     const experiense = SpeakerContext.exp;
     if (experiense <= 1) {
       return 500;
