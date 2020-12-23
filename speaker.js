@@ -24,7 +24,7 @@ function Speaker() {
     employersList.indexOf(SpeakerContext.employer) !== -1);
   }
 
-  SpeakerContext.checkValidation = () => {
+  SpeakerContext.validationChecking = () => {
     //DEFECT #5274 weren't filtering out prodigy domain so I added it.
     const domainsList = ['aol.com', 'hotmail.com', 'prodigy.com', 'CompuServe.com'];
     const emailParts = SpeakerContext.email.split('@');
@@ -34,29 +34,29 @@ function Speaker() {
         SpeakerContext.browser.majorVersion < 9))
   }
 
-  SpeakerContext.setApprovement = () => {
+  SpeakerContext.setApprove = () => {
     const technologiesList = ['Cobol', 'Punch Cards', 'Commodore', 'VBScript'];
     for (let session of SpeakerContext.sessions) {
       for (let technology of technologiesList) {
-        return session.approved = (session.title.indexOf(technology) !== -1 ||
-        session.description.indexOf(technology) !== -1) ? false : true;
+        return session.approved = (!session.title.includes(technology) ||
+        !session.description.includes(technology));
       }
     }
   }
 
-  SpeakerContext.checkSessions = () => {
+  SpeakerContext.sessionsChecking = () => {
     //DEFECT #5013 CO 1/12/2012
     //We weren't requiring at least one session
-    if (SpeakerContext.sessions.length !== 0) {
-              return SpeakerContext.setApprovement();
-            } else {
-              throw new Error(
-                "Can't register speaker with no sessions to present."
-              );
-            }
+    if (SpeakerContext.sessions.length) {
+      return SpeakerContext.setApprove();
+    } else {
+      throw new Error(
+        "Can't register speaker with no sessions to present."
+      );
+    }
   }
 
-  SpeakerContext.setRegistrationFee = () => {
+  SpeakerContext.setRegistration = () => {
     //if we got this far, the speaker is approved
     //let's go ahead and register him/her now.
     //First, let's calculate the registration fee.
@@ -65,21 +65,21 @@ function Speaker() {
     const experiense = SpeakerContext.exp;
     if (experiense <= 1) {
       return 500;
-    } else if (experiense >= 2 && experiense <= 3) {
+    } else if (experiense <= 3) {
       return 250;
-    } else if (experiense >= 4 && experiense <= 5) {
+    } else if (experiense <= 5) {
       return 100;
-    } else if (experiense >= 6 && experiense <= 9) {
+    } else if (experiense <= 9) {
       return 50;
     } else return 0;
   }
 
   SpeakerContext.setSpeakerId = (isSpeakerApproved, speakerId, isSpeakerValid, repository) => {
     if (isSpeakerValid) {
-      isSpeakerApproved = SpeakerContext.checkSessions();
+      isSpeakerApproved = SpeakerContext.sessionsChecking();
 
       if (isSpeakerApproved) {
-        SpeakerContext.registrationFee = SpeakerContext.setRegistrationFee()
+        SpeakerContext.registrationFee = SpeakerContext.setRegistration()
         //Now, save the speaker and sessions to the db.
         return speakerId = repository.saveSpeaker(this);
       } else {
@@ -93,14 +93,14 @@ function Speaker() {
   SpeakerContext.speakerValid = (speakerId, isSpeakerApproved, repository) => {
     if (SpeakerContext.firstName && SpeakerContext.lastName && SpeakerContext.email) {
       let isSpeakerValid = SpeakerContext.validate();
-      isSpeakerValid = !isSpeakerValid ? SpeakerContext.checkValidation() : isSpeakerValid;
+      isSpeakerValid = !isSpeakerValid ? SpeakerContext.validationChecking() : isSpeakerValid;
 
         return speakerId = SpeakerContext.setSpeakerId(isSpeakerApproved, speakerId, isSpeakerValid, repository);
     } else {
-      const error = SpeakerContext.email.length === 0 ? 'Email is required' : 
-      SpeakerContext.lastName.length === 0 ? 'Last Name is required' : 
-      SpeakerContext.firstName.length === 0 ? 'First Name is required' : null;
-      throw new Error(error);
+      const issue = !SpeakerContext.email ? 'Email is required' : 
+      !SpeakerContext.lastName ? 'Last Name is required' : 
+      !SpeakerContext.firstName ? 'First Name is required' : null;
+      throw new Error(issue);
     }
   }
 
